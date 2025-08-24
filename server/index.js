@@ -6,6 +6,7 @@ const messageRoutes = require("./routes/messages");
 const app = express();
 const socket = require("socket.io");
 require("dotenv").config();
+const path = require("path");
 
 app.use(cors());
 app.use(express.json());
@@ -29,15 +30,35 @@ app.get("/ping", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
+// --------------------------deployment------------------------------
+
+const __dirname1 = path.resolve();
+
+if (process.env.MONGO_URL === "production") {
+  app.use(express.static(path.join(__dirname1, "/public/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "public", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running..");
+  });
+}
+
+
 const server = app.listen(process.env.PORT, () =>
   console.log(`Server started on ${process.env.PORT}`)
 );
 const io = socket(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",   // allow all origins in dev
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
+
+
 
 global.onlineUsers = new Map();
 io.on("connection", (socket) => {
