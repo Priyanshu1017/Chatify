@@ -50,11 +50,11 @@ if (process.env.NODE_ENV === "production") {
 const server = app.listen(process.env.PORT, () =>
   console.log(`Server started on ${process.env.PORT}`)
 );
-const io = socket(server, {
+const io = require("socket.io")(server, {
+  pingTimeout: 60000,
   cors: {
-    origin: "*",   // allow all origins in dev
-    methods: ["GET", "POST"],
-    credentials: true,
+    origin: "http://localhost:3000",
+    // credentials: true,
   },
 });
 
